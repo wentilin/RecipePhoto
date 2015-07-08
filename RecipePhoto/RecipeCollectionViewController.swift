@@ -101,12 +101,12 @@ class RecipeCollectionViewController: UICollectionViewController {
         if shareEnabled {
             if seletedRecipes.count > 0 {
                 let socialController = SLComposeViewController(forServiceType: SLServiceTypeSinaWeibo)
-                socialController.setInitialText("iOS App测试，请忽视！")
+                socialController.setInitialText("iOS App测试，请忽视！github连接-->")
                 for recipePhoto in seletedRecipes {
                     println(recipePhoto)
                     socialController.addImage(UIImage(named: recipePhoto as! String))
                 }
-                socialController.addURL(NSURL(string: ""))
+                socialController.addURL(NSURL(string: "https://github.com/wentilin/RecipePhoto"))
                 self.presentViewController(socialController, animated:true, completion: nil)
             }
             //Deselect all selected image
