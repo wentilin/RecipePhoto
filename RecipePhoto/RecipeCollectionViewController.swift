@@ -11,13 +11,16 @@ import Social
 
 let reuseIdentifier = "Cell"
 
-class RecipeCollectionViewController: UICollectionViewController {
+class RecipeCollectionViewController: UICollectionViewController, UINavigationControllerDelegate {
 
     var recipeImages = []
     var mainDishImages: [String] = []
     var drinkDessertImages: [String] = []
     var seletedRecipes: NSMutableArray = []
     var shareEnabled: Bool = false
+    
+    //转场交互
+    var interactiveTransition: UIPercentDrivenInteractiveTransition?
     
     @IBOutlet weak var shareButton: UIBarButtonItem!
     
@@ -32,6 +35,46 @@ class RecipeCollectionViewController: UICollectionViewController {
         
         let collectionViewLayout = self.collectionViewLayout as! UICollectionViewFlowLayout
         collectionViewLayout.sectionInset = UIEdgeInsetsMake(20, 0, 20, 0)
+        
+//        let panGesture = UIPanGestureRecognizer(target: self, action: "popAnimation:")
+//        self.collectionView?.addGestureRecognizer(panGesture)
+        
+        //设置模糊背景图片
+        let backgroundImageView = UIImageView(image: UIImage(named: "backgroundPicture"))
+        backgroundImageView.frame = self.collectionView!.bounds
+        backgroundImageView.sizeToFit()
+        self.collectionView?.backgroundView = backgroundImageView
+        
+        let effectView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffectStyle.Light))
+        effectView.frame = self.collectionView!.bounds
+        effectView.alpha = 1
+        backgroundImageView.addSubview(effectView)
+        
+        //转场手势
+        self.collectionView?.panGestureRecognizer.addTarget(self, action: "popAnimation:")
+    }
+    
+    //控制转场过程
+    func popAnimation(gesture: UIPanGestureRecognizer) {
+        var progress = gesture.translationInView(self.collectionView!).x / self.collectionView!.bounds.size.width
+        progress = min(1.0, max(0.0, progress))
+        
+        switch gesture.state {
+        case .Began:
+            self.interactiveTransition = UIPercentDrivenInteractiveTransition()
+        case .Changed:
+            self.interactiveTransition?.updateInteractiveTransition(progress)
+        default:
+            if progress > 0.5 {
+                self.interactiveTransition?.finishInteractiveTransition()
+            } else {
+                self.interactiveTransition?.cancelInteractiveTransition()
+            }
+        }
+    }
+    
+    func navigationController(navigationController: UINavigationController, interactionControllerForAnimationController animationController: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
+        return self.interactiveTransition
     }
 
     // MARK: UICollectionViewDataSource
@@ -79,6 +122,7 @@ class RecipeCollectionViewController: UICollectionViewController {
             let indexPath = indexPaths.first!
             if let recipeController = segue.destinationViewController as? RecipeViewController {
                     recipeController.recipeName = recipeImages[indexPath.section][indexPath.row] as? String
+                recipeController.title = "美食"
             }
         }
     }
@@ -129,5 +173,4 @@ class RecipeCollectionViewController: UICollectionViewController {
             self.shareButton.style = UIBarButtonItemStyle.Done
         }
     }
-    
 }
